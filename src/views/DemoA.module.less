@@ -1,4 +1,26 @@
 .layout {
 	width: 100%;
 	height: 100vh;
+	display: flex;
+
+	&-side-menu {
+		width: 230px;
+		height: 100%;
+		flex: none;
+		border-right: 1px solid #f0f0f0;
+	}
+
+	&-wrapper {
+		flex: auto;
+		width: 100px;
+		height: 100%;
+	}
+}
+
+.item {
+	width: 160px;
+	height: 40px;
+	border: 1px dotted #ddd;
+	border-radius: 6px;
+	margin: 10px auto;
 }
