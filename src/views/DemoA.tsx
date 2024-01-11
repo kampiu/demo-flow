@@ -38,14 +38,13 @@ const edgeTypes = {
 function DemoA() {
 	const reactFlowWrapper = useRef<HTMLDivElement>({} as HTMLDivElement)
 	
-	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>(null)
+	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>({} as ReactFlowInstance)
 	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
 	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 	
 	const onConnect = useCallback(
 		(connection: Connection) => {
 			console.log("____", connection)
-			connection.type = "edgeA"
 			setEdges((eds) => addEdge(connection, eds))
 		},
 		[setEdges],
@@ -117,7 +116,7 @@ function DemoA() {
 				>
 					<Controls/>
 					<MiniMap/>
-					<Background variant="dots" gap={ 12 } size={ 1 }/>
+					<Background gap={ 12 } size={ 1 }/>
 				</ReactFlow>
 			</div>
 		</div>

@@ -24,10 +24,6 @@ export default function EdgeA(props) {
 		<>
 			<BaseEdge
 				id={ id }
-				animated={ true }
-				className="react-flow__edge-interaction"
-				onMouseEnter={ () => console.log("enter edge") }
-				onMouseLeave={ () => console.log("leave edge") }
 				path={ edgePath }
 			/>
 			{
