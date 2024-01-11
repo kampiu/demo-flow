@@ -6,8 +6,9 @@ import {
 	useReactFlow,
 } from "reactflow"
 import "reactflow/dist/style.css"
+import type { EdgeProps } from "@reactflow/core/dist/esm/types"
 
-export default function EdgeA(props) {
+export default function EdgeA(props: EdgeProps) {
 	const {id, sourceX, sourceY, targetX, targetY, selected} = props
 	const {setEdges} = useReactFlow()
 	
