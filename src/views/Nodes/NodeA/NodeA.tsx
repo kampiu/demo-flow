@@ -2,11 +2,31 @@ import type { ChangeEvent } from "react"
 import { useCallback, useRef } from "react"
 import { Handle, Position } from "reactflow"
 import styles from "./NodeA.module.less"
-import { Button, Col, Form, Input, Row, Select } from "antd"
+import { Button, Col, Form, Input, Row, Select, Checkbox, Switch, Dropdown } from "antd"
+import clsx from "clsx"
+import { DataTypeOptions } from "./constants"
 
 const handleStyle = {left: 10}
 
 const options = [{value: "gold"}, {value: "lime"}, {value: "green"}, {value: "cyan"}]
+
+const items = [
+	{
+		label: <a href="https://www.antgroup.com">1st menu item</a>,
+		key: "0",
+	},
+	{
+		label: <a href="https://www.aliyun.com">2nd menu item</a>,
+		key: "1",
+	},
+	{
+		type: "divider",
+	},
+	{
+		label: "3rd menu item",
+		key: "3",
+	},
+]
 
 function NodeA({data, isConnectable}: any) {
 	
@@ -17,68 +37,119 @@ function NodeA({data, isConnectable}: any) {
 	
 	return (
 		<div className={ styles.customNode } ref={ nodeRef }>
-			<div className={styles.customNodeWrapper}>
+			<div className={ styles.customNodeWrapper }>
 				数据库表A
 			</div>
 			<div className={ styles.customNodeRow }>
 				<Form layout="vertical" size="small">
+					<div className={ styles.row }>
+						<div className={ styles.rowCol } style={ {width: 80} }>
+							字段名
+						</div>
+						<div className={ styles.rowCol } style={ {width: 92} }>
+							数据类型
+						</div>
+						<div className={ styles.rowCol } style={ {width: 70} }>
+							长度/范围
+						</div>
+						<div className={ styles.rowCol } style={ {width: 40} }>
+							为空
+						</div>
+						<div className={ styles.rowCol } style={ {width: 100} }>
+							默认值
+						</div>
+						<div className={ styles.rowCol } style={ {width: 40} }>
+							索引
+						</div>
+						<div className={ styles.rowCol } style={ {width: 40} }>
+							唯一
+						</div>
+						<div className={ styles.rowCol } style={ {width: 100} }>
+							描述
+						</div>
+					</div>
 					<Form.List name="data">
 						{ (fields, {add, remove, move}) => {
 							return (
 								<div className={ styles.form }>
 									{ fields.map(field => {
 										return (
-											<div className={ styles.formRow }>
+											<div className={ clsx(styles.row, styles.formRow) }>
 												<div className={ styles.formRowLeftWrapper }>
 													<Handle
-														id="a-1"
+														id={ `${ field.name }_custom_point_a` }
 														type="target"
-														position={Position.Top}
+														position={ Position.Left }
 														isConnectable={ isConnectable }
 													/>
 													<Handle
-														id="a-2"
+														id={ `${ field.name }_custom_point_b` }
 														type="source"
-														position={ Position.Top }
+														position={ Position.Left }
 														isConnectable={ isConnectable }
 													/>
 												</div>
-												<Row gutter={10}>
-													<Col>
-														<Form.Item name="name">
-															<Input placeholder="请填写自定义属性"/>
-														</Form.Item>
-													</Col>
-													<Col>
-														<Form.Item name="status">
-															<Select
-																placeholder="请填写自定义属性"
-																defaultValue={ "gold" }
-																getPopupContainer={ () => nodeRef.current }
-															>
-																{ options.map(option => <Select.Option
-																	key={ option.value }
-																	value={ option.value }>{ option.value }</Select.Option>) }
-															</Select>
-														</Form.Item>
-													</Col>
-													<Col>
-														<Form.Item name="type">
-															<Input placeholder="请填写自定义属性"/>
-														</Form.Item>
-													</Col>
-												</Row>
+												<div className={ styles.rowCol } style={ {width: 80} }>
+													<Form.Item name={ [field.name, "columnName"] }>
+														<Input placeholder="字段名"/>
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 92} }>
+													<Form.Item name={ [field.name, "dataType"] }>
+														<Select
+															getPopupContainer={() => nodeRef.current}
+															placeholder="数据类型"
+															options={ DataTypeOptions }
+														/>
+														{/*<Dropdown menu={ {items: DataTypeOptions} } trigger={ ["click"] } getPopupContainer={() => nodeRef.current}>*/}
+														{/*	<a onClick={ (e) => e.preventDefault() }>*/}
+														{/*		Click me*/}
+														{/*	</a>*/}
+														{/*</Dropdown>*/}
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 70} }>
+													<Form.Item name={ [field.name, "length"] }>
+														<Input placeholder="长度/范围"/>
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 40} }>
+													<Form.Item name={ [field.name, "nullable"] }>
+														<Switch/>
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 100} }>
+													<Form.Item name={ [field.name, "defaultValue"] }>
+														<Input placeholder="默认值"/>
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 40} }>
+													<Form.Item noStyle name={ [field.name, "index"] }
+													           valuePropName="checked">
+														<Switch/>
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 40} }>
+													<Form.Item name={ [field.name, "unique"] } valuePropName="checked">
+														<Switch/>
+													</Form.Item>
+												</div>
+												<div className={ styles.rowCol } style={ {width: 100} }>
+													<Form.Item name={ [field.name, "description"] }>
+														<Input placeholder="描述"/>
+													</Form.Item>
+												</div>
 												<div className={ styles.formRowRightWrapper }>
 													<Handle
-														id="a-3"
+														id={ `${ field.name }_custom_point_c` }
 														type="target"
-														position={Position.Top}
+														position={ Position.Right }
 														isConnectable={ isConnectable }
 													/>
 													<Handle
-														id="a-4"
+														id={ `${ field.name }_custom_point_d` }
 														type="source"
-														position={ Position.Top }
+														position={ Position.Right }
 														isConnectable={ isConnectable }
 													/>
 												</div>
@@ -92,14 +163,14 @@ function NodeA({data, isConnectable}: any) {
 					</Form.List>
 				</Form>
 			</div>
-			{/*<Handle*/}
-			{/*	type="source"*/}
-			{/*	position={ Position.Bottom }*/}
-			{/*	id="a"*/}
-			{/*	style={ handleStyle }*/}
-			{/*	isConnectable={ isConnectable }*/}
-			{/*/>*/}
-			{/*<Handle type="source" position={ Position.Bottom } id="b" isConnectable={ isConnectable }/>*/}
+			{/*<Handle*/ }
+			{/*	type="source"*/ }
+			{/*	position={ Position.Bottom }*/ }
+			{/*	id="a"*/ }
+			{/*	style={ handleStyle }*/ }
+			{/*	isConnectable={ isConnectable }*/ }
+			{/*/>*/ }
+			{/*<Handle type="source" position={ Position.Bottom } id="b" isConnectable={ isConnectable }/>*/ }
 		</div>
 	)
 }

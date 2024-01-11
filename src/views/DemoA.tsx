@@ -14,6 +14,9 @@ import NodeA from "./Nodes/NodeA"
 import EdgeA from "./Edges/EdgeA"
 import clsx from "clsx"
 import type { ReactFlowInstance } from "@reactflow/core/dist/esm/types/instance"
+import { randomString } from "@/helper"
+import { DataTypeOptions } from "@/views/Nodes/NodeA/constants"
+import { Select } from "antd"
 
 const initialNodes = [
 	{id: "1", position: {x: 0, y: 0}, data: {label: "1"}},
@@ -42,6 +45,7 @@ function DemoA() {
 	const onConnect = useCallback(
 		(connection: Connection) => {
 			console.log("____", connection)
+			connection.type = "edgeA"
 			setEdges((eds) => addEdge(connection, eds))
 		},
 		[setEdges],
@@ -66,18 +70,20 @@ function DemoA() {
 		if (typeof type === "undefined" || !type) {
 			return
 		}
-		const position = reactFlowInstance.project({
+		const position = reactFlowInstance?.project({
 			x: event.clientX - reactFlowBounds.left,
 			y: event.clientY - reactFlowBounds.top,
 		})
-		let newNode = {
-			id: "aaaaaaa",
-			type: type,
-			position,
-			data: {label: `${ type } node`},
+		if (position){
+			let newNode = {
+				id: randomString(12),
+				type: type,
+				position,
+				data: {label: `${ type } node`},
+			}
+			setNodes((es) => es.concat(newNode))
 		}
-		setNodes((es) => es.concat(newNode))
-	}, [])
+	}, [reactFlowInstance])
 	
 	return (
 		<div className={ styles.layout }>
@@ -91,6 +97,10 @@ function DemoA() {
 						</div>
 					))
 				}
+				<Select
+					placeholder="数据类型"
+					options={ DataTypeOptions }
+				/>
 			</div>
 			<div ref={ reactFlowWrapper } className={styles.layoutWrapper}>
 				<ReactFlow
