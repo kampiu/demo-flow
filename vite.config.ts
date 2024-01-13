@@ -9,6 +9,7 @@ import { defineConfig, normalizePath } from "vite"
  */
 export default defineConfig((): UserConfig => {
 	return {
+		base: "/demo-flow/",
 		server: {
 			port: 3000,
 			host: "0.0.0.0"

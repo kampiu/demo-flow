@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState } from "react"
 import ReactFlow, {
 	MiniMap,
 	Controls,
@@ -17,25 +17,34 @@ import type { ReactFlowInstance } from "@reactflow/core/dist/esm/types/instance"
 import { randomString } from "@/helper"
 import { DataTypeOptions } from "@/views/Nodes/NodeA/constants"
 import { Select } from "antd"
+import FlowManager from "@/FlowManager"
+import { Flow } from "@/types"
 
 const initialNodes = [
 	{id: "1", position: {x: 0, y: 0}, data: {label: "1"}},
 	{id: "2", position: {x: 0, y: 100}, data: {label: "2"}},
 	{id: "3", position: {x: 200, y: 200}, data: {label: "2"}, type: "customNode"},
 	{id: "4", position: {x: 300, y: 500}, data: {label: "2"}, type: "nodeA"},
-	{id: "5", position: {x: 700, y: 500}, data: {label: "2"}, type: "nodeA"},
+	{id: "5", position: {x: 700, y: 500}, data: {label: "2"}, type: "NodeB"},
 ]
 const initialEdges = [
 	{id: "1->2", source: "1", target: "2", type: "edgeA"},
 	{id: "e1-3", source: "a-2", target: "2"}
 ]
 
-const nodeTypes = {customNode: CustomNode, nodeA: NodeA}
+// const nodeTypes = {customNode: CustomNode, nodeA: NodeA, ...FlowManager.nodes}
 const edgeTypes = {
 	"edgeA": EdgeA,
 }
 
 function DemoA() {
+	const nodeTypes = useMemo(() => {
+		const n = FlowManager.getAllNodes().reduce((result, item) => {
+			result[item.type] = item.component
+			return result
+		}, {} as Record<Flow.NodeType | string, React.ComponentType>)
+		return {customNode: CustomNode, nodeA: NodeA, ...n}
+	}, [])
 	const reactFlowWrapper = useRef<HTMLDivElement>({} as HTMLDivElement)
 	
 	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>({} as ReactFlowInstance)
@@ -84,17 +93,26 @@ function DemoA() {
 		}
 	}, [reactFlowInstance])
 	
+	const nodesComponent = useMemo(() => {
+		return FlowManager.getAllNodes()
+	}, [])
+	
 	return (
 		<div className={ styles.layout }>
 			<div className={ styles.layoutSideMenu }>
-				
 				{
-					["AAA", "BBB", "CCC"].map(item => (
-						<div className={ clsx(styles.item, "dndnode", "input") } key={ item }
-						     onDragStart={ (event) => onDragStart(event, "input") } draggable>
-							{ item }
-						</div>
-					))
+					nodesComponent.map(node => {
+						const NodeItem = node.component
+						return (
+							<div className={ clsx(styles.item, "dndnode", "input") } key={ node.type }
+							     onDragStart={ (event) => onDragStart(event, node.type) } draggable>
+								<div>
+									<NodeItem />
+								</div>
+								{ node.title }
+							</div>
+						)
+					})
 				}
 				<Select
 					placeholder="数据类型"
