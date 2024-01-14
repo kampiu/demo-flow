@@ -8,7 +8,13 @@ export const install = () => {
 	FlowManager.registerNode({
 		type: Flow.NodeType.NodeA,
 		title: "NodeA",
-		component: NodeA
+		component: NodeA,
+		rules: [
+			{
+				sourceNodeType: "",
+				targetNodeType: ""
+			}
+		]
 	})
 }
 

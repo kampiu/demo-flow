@@ -25,7 +25,7 @@ export interface INode {
 	title: string
 	component: ForwardRefExoticComponent<any & RefAttributes<any>>
 	/** 节点链接规则 */
-	riles?: Array<INodeRule>
+	rules?: Array<INodeRule>
 }
 
 class FlowManager {

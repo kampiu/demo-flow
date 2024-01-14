@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react"
+import React, { useCallback, useMemo, useRef, useState, memo, useEffect } from "react"
 import ReactFlow, {
 	MiniMap,
 	Controls,
@@ -6,6 +6,11 @@ import ReactFlow, {
 	useNodesState,
 	useEdgesState,
 	addEdge,
+	ReactFlowProvider,
+	useNodes,
+	useStore,
+	useReactFlow,
+	useOnSelectionChange
 } from "reactflow"
 import styles from "./DemoA.module.less"
 import CustomNode from "./components/CustomNode"
@@ -17,6 +22,8 @@ import type { ReactFlowInstance } from "@reactflow/core/dist/esm/types/instance"
 import { randomString } from "@/helper"
 import FlowManager from "@/FlowManager"
 import { Flow } from "@/types"
+import FlowDataProvider from "../context/FlowData"
+import useSetActiveNode from "../hooks/useSetActiveNode"
 
 const initialNodes = [
 	{id: "1", position: {x: 0, y: 0}, data: {label: "1"}},
@@ -36,6 +43,9 @@ const edgeTypes = {
 }
 
 function DemoA() {
+	const connectionNodeId = useStore((store) => store.connectionNodeId)
+	const setActiveNode = useSetActiveNode()
+	
 	const nodeTypes = useMemo(() => {
 		const n = FlowManager.getAllNodes().reduce((result, item) => {
 			result[item.type] = item.component
@@ -45,6 +55,10 @@ function DemoA() {
 	}, [])
 	const reactFlowWrapper = useRef<HTMLDivElement>({} as HTMLDivElement)
 	
+	useEffect(() => {
+		setActiveNode(connectionNodeId)
+	}, [connectionNodeId])
+	
 	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>({} as ReactFlowInstance)
 	const [nodes, setNodes, onNodesChange] = useNodesState([])
 	const [edges, setEdges, onEdgesChange] = useEdgesState([])
@@ -53,7 +67,7 @@ function DemoA() {
 	
 	const onConnect = useCallback(
 		(connection: Connection) => {
-			console.log("____", connection)
+			// 通过connection处理两个节点的handle方向
 			setEdges((eds) => addEdge(connection, eds))
 		},
 		[setEdges],
@@ -111,7 +125,8 @@ function DemoA() {
 							const NodeItem = node.component
 							return (
 								<div className={ clsx(styles.item, "dndnode", "input") } key={ node.type }>
-									<div className={ styles.itemIcon } onDragStart={ (event) => onDragStart(event, node.type) } draggable>
+									<div className={ styles.itemIcon }
+									     onDragStart={ (event) => onDragStart(event, node.type) } draggable>
 										<NodeItem isMenu/>
 									</div>
 									<span className={ styles.itemText }>
@@ -145,4 +160,12 @@ function DemoA() {
 	)
 }
 
-export default DemoA
+export default memo(() => {
+	return (
+		<FlowDataProvider>
+			<ReactFlowProvider>
+				<DemoA/>
+			</ReactFlowProvider>
+		</FlowDataProvider>
+	)
+})
