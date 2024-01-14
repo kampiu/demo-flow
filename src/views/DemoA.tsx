@@ -15,8 +15,6 @@ import EdgeA from "./Edges/EdgeA"
 import clsx from "clsx"
 import type { ReactFlowInstance } from "@reactflow/core/dist/esm/types/instance"
 import { randomString } from "@/helper"
-import { DataTypeOptions } from "@/views/Nodes/NodeA/constants"
-import { Select } from "antd"
 import FlowManager from "@/FlowManager"
 import { Flow } from "@/types"
 
@@ -48,8 +46,10 @@ function DemoA() {
 	const reactFlowWrapper = useRef<HTMLDivElement>({} as HTMLDivElement)
 	
 	const [reactFlowInstance, setReactFlowInstance] = useState<ReactFlowInstance>({} as ReactFlowInstance)
-	const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-	const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+	const [nodes, setNodes, onNodesChange] = useNodesState([])
+	const [edges, setEdges, onEdgesChange] = useEdgesState([])
+	
+	const targetCache = useRef({x: 0, y: 0})
 	
 	const onConnect = useCallback(
 		(connection: Connection) => {
@@ -63,9 +63,13 @@ function DemoA() {
 		// 记录被拖拽的节点类型
 		evt.dataTransfer.setData("application/reactflow", nodeType)
 		evt.dataTransfer.effectAllowed = "move"
+		// 对比拖拽目标的鼠标所在位置，计算拖抓后目标所落画布位置，1:1还原
+		// @ts-ignore
+		const position = evt.target?.getBoundingClientRect()
+		targetCache.current = {x: evt.clientX - position.left, y: evt.clientY - position.top}
 	}, [])
 	
-	const onDragOver = useCallback((event: any) => {
+	const onDragOver = useCallback((event: React.DragEvent) => {
 		event.preventDefault()
 		event.dataTransfer.dropEffect = "move"
 	}, [])
@@ -79,10 +83,11 @@ function DemoA() {
 			return
 		}
 		const position = reactFlowInstance?.project({
-			x: event.clientX - reactFlowBounds.left,
-			y: event.clientY - reactFlowBounds.top,
+			x: event.clientX - reactFlowBounds.left - targetCache.current.y,
+			y: event.clientY - reactFlowBounds.top - targetCache.current.y,
 		})
-		if (position){
+		console.log("______", position, event, reactFlowBounds)
+		if (position) {
 			let newNode = {
 				id: randomString(12),
 				type: type,
@@ -100,26 +105,25 @@ function DemoA() {
 	return (
 		<div className={ styles.layout }>
 			<div className={ styles.layoutSideMenu }>
-				{
-					nodesComponent.map(node => {
-						const NodeItem = node.component
-						return (
-							<div className={ clsx(styles.item, "dndnode", "input") } key={ node.type }
-							     onDragStart={ (event) => onDragStart(event, node.type) } draggable>
-								<div>
-									<NodeItem />
+				<div className={ styles.layoutSideMenuWrapper }>
+					{
+						nodesComponent.map(node => {
+							const NodeItem = node.component
+							return (
+								<div className={ clsx(styles.item, "dndnode", "input") } key={ node.type }>
+									<div className={ styles.itemIcon } onDragStart={ (event) => onDragStart(event, node.type) } draggable>
+										<NodeItem isMenu/>
+									</div>
+									<span className={ styles.itemText }>
+										{ node.title }
+									</span>
 								</div>
-								{ node.title }
-							</div>
-						)
-					})
-				}
-				<Select
-					placeholder="数据类型"
-					options={ DataTypeOptions }
-				/>
+							)
+						})
+					}
+				</div>
 			</div>
-			<div ref={ reactFlowWrapper } className={styles.layoutWrapper}>
+			<div ref={ reactFlowWrapper } className={ styles.layoutWrapper }>
 				<ReactFlow
 					nodes={ nodes }
 					edges={ edges }
