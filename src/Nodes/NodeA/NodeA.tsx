@@ -13,8 +13,6 @@ export interface NodeAInstance {
 
 }
 
-export const position = [Position.Top, Position.Left, Position.Right, Position.Bottom]
-
 const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 	
 	const {isMenu, isConnectable} = props
@@ -36,34 +34,24 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 			{
 				!isMenu && (
 					<>
-						{
-							position.map(i => (
-								<Handle
-									key={ `source_${i}` }
-									type="source"
-									className={ styles.nodeHandle }
-									style={ {
-										zIndex: activeNode === null ? 100 : -1,
-									} }
-									position={ i }
-									isConnectable={ isConnectable }
-								/>
-							))
-						}
-						{
-							position.map(i => (
-								<Handle
-									key={ `target_${i}` }
-									type="target"
-									className={ styles.nodeHandle }
-									style={ {
-										zIndex: (!props.id && activeNode !== props.id) ? 100 : -1
-									} }
-									position={ i }
-									isConnectable={ isConnectable }
-								/>
-							))
-						}
+						<Handle
+							type="source"
+							className={ styles.nodeHandle }
+							style={ {
+								zIndex: activeNode === null ? 100 : -1,
+							} }
+							position={ Position.Top }
+							isConnectable={ isConnectable }
+						/>
+						<Handle
+							type="target"
+							className={ styles.nodeHandle }
+							style={ {
+								zIndex: (!props.id && activeNode !== props.id) ? 100 : -1
+							} }
+							position={ Position.Top }
+							isConnectable={ isConnectable }
+						/>
 						<span className={ styles.nodeText }>NodeA</span>
 					</>
 				)

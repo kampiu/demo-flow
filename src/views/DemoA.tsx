@@ -74,6 +74,7 @@ function DemoA() {
 			
 			// connection.sourceHandle = `source_${Position.Right}`
 			// connection.targetHandle = `target_${Position.Top}`
+			connection.type = "edgeA"
 			console.log("---", connection, sourcePosition?.left, targetPosition?.left)
 			setEdges((eds) => addEdge(connection, eds))
 		},
