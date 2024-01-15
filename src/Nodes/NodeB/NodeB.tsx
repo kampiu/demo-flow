@@ -3,6 +3,7 @@ import styles from "./NodeB.module.less"
 import { Handle, Position } from "reactflow"
 import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
 import { useFlowDataSelector } from "@/context/FlowData"
+import { position } from "@/Nodes/NodeA/NodeA"
 
 interface NodeBProps extends NodeProps {
 	isMenu?: boolean
@@ -27,24 +28,34 @@ const NodeB = forwardRef<NodeBInstance, NodeBProps>((props, ref) => {
 			{
 				!isMenu && (
 					<>
-						<Handle
-							type="source"
-							className={styles.nodeHandle}
-							style={{
-								zIndex: activeNode === null ? 100 : -1,
-							}}
-							position={ Position.Left }
-							isConnectable={ isConnectable }
-						/>
-						<Handle
-							type="target"
-							className={styles.nodeHandle}
-							style={{
-								zIndex: (!props.id && activeNode !== props.id) ? 100 : -1
-							}}
-							position={ Position.Right }
-							isConnectable={ isConnectable }
-						/>
+						{
+							position.map(i => (
+								<Handle
+									key={ `source_${i}` }
+									type="source"
+									className={ styles.nodeHandle }
+									style={ {
+										zIndex: activeNode === null ? 100 : -1,
+									} }
+									position={ i }
+									isConnectable={ isConnectable }
+								/>
+							))
+						}
+						{
+							position.map(i => (
+								<Handle
+									key={ `target_${i}` }
+									type="target"
+									className={ styles.nodeHandle }
+									style={ {
+										zIndex: (!props.id && activeNode !== props.id) ? 100 : -1
+									} }
+									position={ i }
+									isConnectable={ isConnectable }
+								/>
+							))
+						}
 						<span className={ styles.nodeText }>NodeB</span>
 					</>
 				)

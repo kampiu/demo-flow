@@ -10,7 +10,7 @@ import ReactFlow, {
 	useNodes,
 	useStore,
 	useReactFlow,
-	useOnSelectionChange
+	useOnSelectionChange, Position,
 } from "reactflow"
 import styles from "./DemoA.module.less"
 import CustomNode from "./components/CustomNode"
@@ -24,6 +24,7 @@ import FlowManager from "@/FlowManager"
 import { Flow } from "@/types"
 import FlowDataProvider from "../context/FlowData"
 import useSetActiveNode from "../hooks/useSetActiveNode"
+import { ConnectionLineType } from "@reactflow/core"
 
 const initialNodes = [
 	{id: "1", position: {x: 0, y: 0}, data: {label: "1"}},
@@ -68,6 +69,12 @@ function DemoA() {
 	const onConnect = useCallback(
 		(connection: Connection) => {
 			// 通过connection处理两个节点的handle方向
+			const sourcePosition = document.querySelector(`[data-id="${connection.source}"]`)?.getBoundingClientRect()
+			const targetPosition = document.querySelector(`[data-id="${connection.target}"]`)?.getBoundingClientRect()
+			
+			// connection.sourceHandle = `source_${Position.Right}`
+			// connection.targetHandle = `target_${Position.Top}`
+			console.log("---", connection, sourcePosition?.left, targetPosition?.left)
 			setEdges((eds) => addEdge(connection, eds))
 		},
 		[setEdges],
@@ -116,6 +123,11 @@ function DemoA() {
 		return FlowManager.getAllNodes()
 	}, [])
 	
+	const isValidConnection = useCallback((connection: Connection): boolean => {
+		return !!(connection.source && connection.target && connection.source !== connection.target);
+		
+	}, [])
+	
 	return (
 		<div className={ styles.layout }>
 			<div className={ styles.layoutSideMenu }>
@@ -124,7 +136,7 @@ function DemoA() {
 						nodesComponent.map(node => {
 							const NodeItem = node.component
 							return (
-								<div className={ clsx(styles.item, "dndnode", "input") } key={ node.type }>
+								<div className={ clsx(styles.item) } key={ node.type }>
 									<div className={ styles.itemIcon }
 									     onDragStart={ (event) => onDragStart(event, node.type) } draggable>
 										<NodeItem isMenu/>
@@ -150,6 +162,9 @@ function DemoA() {
 					onConnect={ onConnect }
 					nodeTypes={ nodeTypes }
 					edgeTypes={ edgeTypes }
+					connectionRadius={6}
+					isValidConnection={isValidConnection}
+					connectionLineType={ ConnectionLineType.Straight }
 				>
 					<Controls/>
 					<MiniMap/>
