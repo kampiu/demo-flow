@@ -3,6 +3,7 @@ import styles from "./NodeC.module.less"
 import { Handle, Position } from "reactflow"
 import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
 import { useFlowDataSelector } from "@/context/FlowData"
+import Icons from "@/components/Icons"
 
 interface NodeCProps extends NodeProps {
 	isMenu?: boolean
@@ -24,6 +25,9 @@ const NodeC = forwardRef<NodeCInstance, NodeCProps>((props, ref) => {
 	
 	return (
 		<div className={ styles.node }>
+			<div className={ styles.nodeWrapper }>
+				<Icons.ReverseOperationIn/>
+			</div>
 			{
 				!isMenu && (
 					<>

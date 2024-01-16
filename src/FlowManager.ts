@@ -10,8 +10,8 @@ type EdgeType = string
 
 /** 节点链接规则 */
 interface INodeRule {
-	sourceNodeType: NodeType
-	targetNodeType: NodeType
+	nodeType: NodeType
+	maxCount?: number
 }
 
 /** 线段类型 */

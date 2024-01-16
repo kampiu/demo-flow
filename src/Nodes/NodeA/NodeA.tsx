@@ -5,6 +5,7 @@ import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
 import { useFlowDataSelector } from "@/context/FlowData"
 import hotkeys from "hotkeys-js"
 import withMenu from "../withMenu"
+import Icons from "../../components/Icons"
 
 interface NodeAProps extends NodeProps {
 	isMenu?: boolean
@@ -34,6 +35,9 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 	
 	return (
 		<div className={ styles.node }>
+			<div className={ styles.nodeWrapper }>
+				<Icons.DataDisplay />
+			</div>
 			{
 				!isMenu && (
 					<>
@@ -55,7 +59,9 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 							position={ Position.Top }
 							isConnectable={ isConnectable }
 						/>
-						<span className={ styles.nodeText }>NodeA</span>
+						<span className={ styles.nodeText }>
+							NodeA
+						</span>
 					</>
 				)
 			}
