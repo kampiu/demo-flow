@@ -1,24 +1,23 @@
 import React, { forwardRef, useCallback, useImperativeHandle } from "react"
-import styles from "./NodeA.module.less"
+import styles from "../NodeA/NodeA.module.less"
 import { Handle, Position, useStore } from "reactflow"
 import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
-import hotkeys from "hotkeys-js"
-import withMenu from "../withMenu"
-import clsx from "clsx"
-import Icons from "../../components/Icons"
+import Icons from "@/components/Icons"
 import { useImmer } from "use-immer"
+import hotkeys from "hotkeys-js"
+import clsx from "clsx"
 
-interface NodeAProps extends NodeProps {
+interface NodeHProps extends NodeProps {
 	isMenu?: boolean
 }
 
-export interface NodeAInstance {
+export interface NodeHInstance {
 
 }
 
-const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
+const NodeH = forwardRef<NodeHInstance, NodeHProps>((props, ref) => {
 	
-	const {isMenu, isConnectable} = props
+	const { isMenu, isConnectable } = props
 	
 	const connectionNodeId = useStore((store) => store.connectionNodeId)
 	
@@ -26,7 +25,7 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 		canConnect: false,
 	})
 	
-	useImperativeHandle(ref, (): NodeAInstance => {
+	useImperativeHandle(ref, (): NodeHInstance => {
 		return {}
 	})
 	
@@ -69,17 +68,15 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 							position={ Position.Top }
 							isConnectable={ isConnectable }
 						/>
-						<span className={ styles.nodeText }>
-							NodeA
-						</span>
+						<span className={ styles.nodeText }>NodeC</span>
 					</>
 				)
 			}
 			<div className={ styles.nodeWrapper }>
-				<Icons.DataDisplay/>
+				<Icons.ConnectionBox/>
 			</div>
 		</div>
 	)
 })
 
-export default withMenu(NodeA)
+export default NodeH

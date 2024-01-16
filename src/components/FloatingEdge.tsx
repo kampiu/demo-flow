@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { useStore, getBezierPath, getStraightPath } from "reactflow"
+import { useStore, getBezierPath, getStraightPath, getSmoothStepPath } from "reactflow"
 
 import { getEdgeParams } from "./utils.js"
 import type { EdgeProps } from "@reactflow/core"
@@ -14,7 +14,6 @@ function FloatingEdge(props: EdgeProps) {
 	const sourceNode = useStore(useCallback((store) => store.nodeInternals.get(source), [source]))
 	const targetNode = useStore(useCallback((store) => store.nodeInternals.get(target), [target]))
 	
-	console.log("-- props -->", props)
 	if (!sourceNode || !targetNode) {
 		return null
 	}
@@ -33,7 +32,7 @@ function FloatingEdge(props: EdgeProps) {
 	return (
 		<path
 			fill="none"
-			stroke="red"
+			stroke="#666666"
 			id={ id }
 			d={ edgePath }
 			markerEnd={ markerEnd }
