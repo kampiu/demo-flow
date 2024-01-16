@@ -44,8 +44,11 @@ const edgeTypes = {
 }
 
 function DemoA() {
-	const connectionNodeId = useStore((store) => store.connectionNodeId)
+	const store = useStore((store) => store)
+	const {connectionNodeId, transform} = store
 	const setActiveNode = useSetActiveNode()
+	
+	const [,,zoom] = transform
 	
 	const nodeTypes = useMemo(() => {
 		const n = FlowManager.getAllNodes().reduce((result, item) => {
@@ -64,13 +67,13 @@ function DemoA() {
 	const [nodes, setNodes, onNodesChange] = useNodesState([])
 	const [edges, setEdges, onEdgesChange] = useEdgesState([])
 	
-	const targetCache = useRef({x: 0, y: 0})
+	const targetCache = useRef({x: 0, y: 0, width: 0,height: 0})
 	
 	const onConnect = useCallback(
 		(connection: Connection) => {
 			// 通过connection处理两个节点的handle方向
-			const sourcePosition = document.querySelector(`[data-id="${connection.source}"]`)?.getBoundingClientRect()
-			const targetPosition = document.querySelector(`[data-id="${connection.target}"]`)?.getBoundingClientRect()
+			const sourcePosition = document.querySelector(`[data-id="${ connection.source }"]`)?.getBoundingClientRect()
+			const targetPosition = document.querySelector(`[data-id="${ connection.target }"]`)?.getBoundingClientRect()
 			
 			// connection.sourceHandle = `source_${Position.Right}`
 			// connection.targetHandle = `target_${Position.Top}`
@@ -85,10 +88,18 @@ function DemoA() {
 		// 记录被拖拽的节点类型
 		evt.dataTransfer.setData("application/reactflow", nodeType)
 		evt.dataTransfer.effectAllowed = "move"
+		
+		const { width, height } = (evt.target as HTMLDivElement).getBoundingClientRect()
 		// 对比拖拽目标的鼠标所在位置，计算拖抓后目标所落画布位置，1:1还原
 		// @ts-ignore
 		const position = evt.target?.getBoundingClientRect()
-		targetCache.current = {x: evt.clientX - position.left, y: evt.clientY - position.top}
+		targetCache.current = {
+			x: (evt.clientX - position.left) / width,
+			y: (evt.clientY - position.top) / height,
+			width: position.width,
+			height: position.height,
+		}
+		console.log("____", evt, nodeType, targetCache.current)
 	}, [])
 	
 	const onDragOver = useCallback((event: React.DragEvent) => {
@@ -104,11 +115,15 @@ function DemoA() {
 		if (typeof type === "undefined" || !type) {
 			return
 		}
+		// 磨平视图区对整体可视区的x、y差异
+		const clientX = event.clientX- 204
+		const {clientY} = event
+		
+		console.log("- end -",  clientX, clientY, reactFlowBounds, targetCache.current, zoom, event)
 		const position = reactFlowInstance?.project({
-			x: event.clientX - reactFlowBounds.left - targetCache.current.y,
-			y: event.clientY - reactFlowBounds.top - targetCache.current.y,
+			x: clientX - (targetCache.current.width * targetCache.current.x) * zoom,
+			y: clientY - (targetCache.current.height * targetCache.current.y) * zoom,
 		})
-		console.log("______", position, event, reactFlowBounds)
 		if (position) {
 			let newNode = {
 				id: randomString(12),
@@ -118,14 +133,14 @@ function DemoA() {
 			}
 			setNodes((es) => es.concat(newNode))
 		}
-	}, [reactFlowInstance])
+	}, [reactFlowInstance, zoom])
 	
 	const nodesComponent = useMemo(() => {
 		return FlowManager.getAllNodes()
 	}, [])
 	
 	const isValidConnection = useCallback((connection: Connection): boolean => {
-		return !!(connection.source && connection.target && connection.source !== connection.target);
+		return !!(connection.source && connection.target && connection.source !== connection.target)
 		
 	}, [])
 	
