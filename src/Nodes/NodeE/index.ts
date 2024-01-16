@@ -13,5 +13,5 @@ export const install = () => {
 	})
 }
 
-export type { NodeCInstance } from "./NodeE"
+export type { NodeEInstance } from "./NodeE"
 export default NodeE
