@@ -4,6 +4,7 @@ import { Handle, Position } from "reactflow"
 import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
 import { useFlowDataSelector } from "@/context/FlowData"
 import hotkeys from "hotkeys-js"
+import withMenu from "../withMenu"
 
 interface NodeAProps extends NodeProps {
 	isMenu?: boolean
@@ -24,9 +25,11 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 	})
 	
 	useEffect(() => {
-		hotkeys("a", (event) => {
-			console.log("--a--", event)
-		})
+		if (!isMenu) {
+			hotkeys("a", (event) => {
+				console.log("--a--", event)
+			})
+		}
 	}, [])
 	
 	return (
@@ -60,4 +63,4 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 	)
 })
 
-export default NodeA
+export default withMenu(NodeA)

@@ -23,6 +23,15 @@ export default function EdgeA(props: EdgeProps) {
 	
 	return (
 		<>
+			<g>
+				<path
+					fill="none"
+					stroke="red"
+					strokeWidth={ 1.5 }
+					className="animated"
+					d={ `M${ sourceX },${ sourceY } C ${ sourceX } ${ targetY } ${ sourceX } ${ targetY } ${ targetX },${ targetY }` }
+				/>
+			</g>
 			<BaseEdge
 				id={ id }
 				path={ edgePath }

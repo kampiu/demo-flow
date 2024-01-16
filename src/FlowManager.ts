@@ -1,5 +1,6 @@
-import type { ForwardRefExoticComponent, RefAttributes } from "react"
+import type { ComponentType, ForwardRefExoticComponent, RefAttributes } from "react"
 import { Flow } from "./types"
+import { MenuProps } from "antd"
 
 /** 节点类型，后续扩展 */
 type NodeType = Flow.NodeType | string
@@ -23,9 +24,11 @@ export interface IEdge {
 export interface INode {
 	type: NodeType
 	title: string
-	component: ForwardRefExoticComponent<any & RefAttributes<any>>
+	component: ComponentType
 	/** 节点链接规则 */
 	rules?: Array<INodeRule>
+	/** 构建节点右击菜单 */
+	generateContextMenu?: () => MenuProps["items"]
 }
 
 class FlowManager {
@@ -45,11 +48,15 @@ class FlowManager {
 		return this.nodes[nodeType]
 	}
 	
+	getNodeConfig(nodeType: NodeType): INode {
+		return this.nodes[nodeType]
+	}
+	
 	getEdge(nodeType: NodeType) {
 		return this.edges[nodeType]
 	}
 	
-	getAllNodes(): Array<INode>{
+	getAllNodes(): Array<INode> {
 		return Object.values(this.nodes)
 	}
 	

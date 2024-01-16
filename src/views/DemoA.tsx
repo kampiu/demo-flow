@@ -1,4 +1,12 @@
-import React, { useCallback, useMemo, useRef, useState, memo, useEffect } from "react"
+import React, {
+	useCallback,
+	useMemo,
+	useRef,
+	useState,
+	memo,
+	useEffect,
+	type MouseEvent as ReactMouseEvent, ComponentType
+} from "react"
 import ReactFlow, {
 	MiniMap,
 	Controls,
@@ -10,7 +18,8 @@ import ReactFlow, {
 	useNodes,
 	useStore,
 	useReactFlow,
-	useOnSelectionChange, Position,
+	useOnSelectionChange,
+	Position,
 } from "reactflow"
 import styles from "./DemoA.module.less"
 import CustomNode from "./components/CustomNode"
@@ -25,6 +34,14 @@ import { Flow } from "@/types"
 import FlowDataProvider from "../context/FlowData"
 import useSetActiveNode from "../hooks/useSetActiveNode"
 import { ConnectionLineType } from "@reactflow/core"
+import ConnectionLine from "@/components/ConnectionLine"
+import FloatingConnectionLine from "@/components/FloatingConnectionLine"
+import FloatingEdge from "@/components/FloatingEdge"
+import { Dropdown, theme } from "antd"
+import ContextMenuProvider, { useContextMenuSelector } from "../context/ContextMenu"
+import useSetContextMenu from "@/hooks/useSetContextMenu"
+import generateContextMenu from "@/Nodes/NodeA/generateContextMenu"
+import { NodeMouseHandler } from "@reactflow/core/dist/esm/types/nodes"
 
 const initialNodes = [
 	{id: "1", position: {x: 0, y: 0}, data: {label: "1"}},
@@ -41,6 +58,7 @@ const initialEdges = [
 // const nodeTypes = {customNode: CustomNode, nodeA: NodeA, ...FlowManager.nodes}
 const edgeTypes = {
 	"edgeA": EdgeA,
+	"floating": FloatingEdge
 }
 
 function DemoA() {
@@ -48,7 +66,16 @@ function DemoA() {
 	const {connectionNodeId, transform} = store
 	const setActiveNode = useSetActiveNode()
 	
-	const [,,zoom] = transform
+	// 设置菜单
+	const setContextMenu = useSetContextMenu()
+	const {menu, menuEl} = useContextMenuSelector(store => {
+		return {
+			menu: store.menu,
+			menuEl: store.el
+		}
+	})
+	
+	const [, , zoom] = transform
 	
 	const nodeTypes = useMemo(() => {
 		const n = FlowManager.getAllNodes().reduce((result, item) => {
@@ -67,19 +94,14 @@ function DemoA() {
 	const [nodes, setNodes, onNodesChange] = useNodesState([])
 	const [edges, setEdges, onEdgesChange] = useEdgesState([])
 	
-	const targetCache = useRef({x: 0, y: 0, width: 0,height: 0})
+	const targetCache = useRef({x: 0, y: 0, width: 0, height: 0})
 	
 	const onConnect = useCallback(
 		(connection: Connection) => {
-			// 通过connection处理两个节点的handle方向
-			const sourcePosition = document.querySelector(`[data-id="${ connection.source }"]`)?.getBoundingClientRect()
-			const targetPosition = document.querySelector(`[data-id="${ connection.target }"]`)?.getBoundingClientRect()
 			
 			// connection.sourceHandle = `source_${Position.Right}`
 			// connection.targetHandle = `target_${Position.Top}`
-			connection.type = "edgeA"
-			console.log("---", connection, sourcePosition?.left, targetPosition?.left)
-			setEdges((eds) => addEdge(connection, eds))
+			setEdges((eds) => addEdge({...connection, type: "floating"}, eds))
 		},
 		[setEdges],
 	)
@@ -89,7 +111,7 @@ function DemoA() {
 		evt.dataTransfer.setData("application/reactflow", nodeType)
 		evt.dataTransfer.effectAllowed = "move"
 		
-		const { width, height } = (evt.target as HTMLDivElement).getBoundingClientRect()
+		const {width, height} = (evt.target as HTMLDivElement).getBoundingClientRect()
 		// 对比拖拽目标的鼠标所在位置，计算拖抓后目标所落画布位置，1:1还原
 		// @ts-ignore
 		const position = evt.target?.getBoundingClientRect()
@@ -99,7 +121,6 @@ function DemoA() {
 			width: position.width,
 			height: position.height,
 		}
-		console.log("____", evt, nodeType, targetCache.current)
 	}, [])
 	
 	const onDragOver = useCallback((event: React.DragEvent) => {
@@ -116,10 +137,9 @@ function DemoA() {
 			return
 		}
 		// 磨平视图区对整体可视区的x、y差异
-		const clientX = event.clientX- 204
-		const {clientY} = event
+		const clientX = event.clientX - reactFlowBounds.left
+		const clientY = event.clientY - reactFlowBounds.top
 		
-		console.log("- end -",  clientX, clientY, reactFlowBounds, targetCache.current, zoom, event)
 		const position = reactFlowInstance?.project({
 			x: clientX - (targetCache.current.width * targetCache.current.x) * zoom,
 			y: clientY - (targetCache.current.height * targetCache.current.y) * zoom,
@@ -141,8 +161,21 @@ function DemoA() {
 	
 	const isValidConnection = useCallback((connection: Connection): boolean => {
 		return !!(connection.source && connection.target && connection.source !== connection.target)
-		
 	}, [])
+	
+	const onNodeContextMenu = useCallback<NodeMouseHandler>((event, node): void => {
+		// Prevent native context menu from showing
+		event.preventDefault()
+		
+		if (node?.type) {
+			const nodeMenu = FlowManager.getNodeConfig(node.type)?.generateContextMenu?.() || []
+			if (Array.isArray(nodeMenu) && nodeMenu.length > 0) {
+				setContextMenu(nodeMenu, document.querySelector(`[data-id="${ node.id }"]`) as HTMLElement)
+			} else {
+				setContextMenu([])
+			}
+		}
+	}, [setContextMenu])
 	
 	return (
 		<div className={ styles.layout }>
@@ -150,7 +183,7 @@ function DemoA() {
 				<div className={ styles.layoutSideMenuWrapper }>
 					{
 						nodesComponent.map(node => {
-							const NodeItem = node.component
+							const NodeItem = node.component as ComponentType<any>
 							return (
 								<div className={ clsx(styles.item) } key={ node.type }>
 									<div className={ styles.itemIcon }
@@ -167,25 +200,36 @@ function DemoA() {
 				</div>
 			</div>
 			<div ref={ reactFlowWrapper } className={ styles.layoutWrapper }>
-				<ReactFlow
-					nodes={ nodes }
-					edges={ edges }
-					onNodesChange={ onNodesChange }
-					onEdgesChange={ onEdgesChange }
-					onDrop={ onDrop }
-					onInit={ setReactFlowInstance }
-					onDragOver={ onDragOver }
-					onConnect={ onConnect }
-					nodeTypes={ nodeTypes }
-					edgeTypes={ edgeTypes }
-					connectionRadius={6}
-					isValidConnection={isValidConnection}
-					connectionLineType={ ConnectionLineType.Straight }
+				<Dropdown
+					menu={ {
+						items: menu
+					} }
+					overlayClassName={styles.contextMenu}
+					trigger={ ["contextMenu"] }
+					getPopupContainer={ () => menuEl || document.body }
 				>
-					<Controls/>
-					<MiniMap/>
-					<Background gap={ 12 } size={ 1 }/>
-				</ReactFlow>
+					<ReactFlow
+						nodes={ nodes }
+						edges={ edges }
+						onNodesChange={ onNodesChange }
+						onEdgesChange={ onEdgesChange }
+						onDrop={ onDrop }
+						onInit={ setReactFlowInstance }
+						onDragOver={ onDragOver }
+						onConnect={ onConnect }
+						nodeTypes={ nodeTypes }
+						edgeTypes={ edgeTypes }
+						connectionRadius={ 6 }
+						isValidConnection={ isValidConnection }
+						connectionLineType={ ConnectionLineType.Straight }
+						connectionLineComponent={ FloatingConnectionLine }
+						onNodeContextMenu={ onNodeContextMenu }
+					>
+						<Controls/>
+						<MiniMap/>
+						<Background gap={ 12 } size={ 1 }/>
+					</ReactFlow>
+				</Dropdown>
 			</div>
 		</div>
 	)
@@ -194,9 +238,11 @@ function DemoA() {
 export default memo(() => {
 	return (
 		<FlowDataProvider>
-			<ReactFlowProvider>
-				<DemoA/>
-			</ReactFlowProvider>
+			<ContextMenuProvider>
+				<ReactFlowProvider>
+					<DemoA/>
+				</ReactFlowProvider>
+			</ContextMenuProvider>
 		</FlowDataProvider>
 	)
 })

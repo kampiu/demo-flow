@@ -7,7 +7,7 @@
 		width: fit-content;
 		height: 100%;
 		flex: none;
-		border-right: 1px solid #f0f0f0;
+		border-right: 1px solid #F0F0F0;
 
 		&-wrapper {
 			width: 100%;
@@ -40,7 +40,7 @@
 	transition: background-color linear 0.2s;
 
 	&:hover {
-		background-color: #f0f0f0;
+		background-color: #F0F0F0;
 	}
 
 	&-icon {
@@ -53,5 +53,31 @@
 		font-size: 12px;
 		margin-top: 6px;
 		text-align: center;
+	}
+}
+
+.context {
+	&-menu {
+		width: 140px;
+
+		:global {
+			.ant-dropdown-menu {
+				padding: 0;
+				overflow: hidden;
+
+				&-item {
+					margin-left: 4px !important;
+					margin-right: 4px !important;
+
+					&:first-child {
+						margin-top: 4px !important;
+					}
+
+					&:last-child {
+						margin-bottom: 4px !important;
+					}
+				}
+			}
+		}
 	}
 }
