@@ -1,22 +1,21 @@
 import React, { forwardRef, useCallback, useImperativeHandle } from "react"
-import styles from "./NodeA.module.less"
+import styles from "../NodeA/NodeA.module.less"
 import { Handle, Position, useStore } from "reactflow"
 import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
-import hotkeys from "hotkeys-js"
-import withMenu from "../withMenu"
-import clsx from "clsx"
-import Icons from "../../components/Icons"
+import Icons from "@/components/Icons"
 import { useImmer } from "use-immer"
+import hotkeys from "hotkeys-js"
+import clsx from "clsx"
 
-interface NodeAProps extends NodeProps {
+interface NodeJProps extends NodeProps {
 	isMenu?: boolean
 }
 
-export interface NodeAInstance {
+export interface NodeJInstance {
 
 }
 
-const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
+const NodeJ = forwardRef<NodeJInstance, NodeJProps>((props, ref) => {
 	
 	const {isMenu, isConnectable} = props
 	
@@ -26,13 +25,14 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 		canConnect: false,
 	})
 	
-	useImperativeHandle(ref, (): NodeAInstance => {
+	useImperativeHandle(ref, (): NodeJInstance => {
 		return {}
 	})
 	
 	const onMouseEnter = useCallback(() => {
 		if (!isMenu) {
 			hotkeys("l", {keyup: true}, (event) => {
+				console.log("___")
 				event.preventDefault()
 				setNodeStatus((preNodeStatus) => {
 					preNodeStatus.canConnect = event.type === "keydown"
@@ -69,17 +69,15 @@ const NodeA = forwardRef<NodeAInstance, NodeAProps>((props, ref) => {
 							position={ Position.Top }
 							isConnectable={ isConnectable }
 						/>
-						<span className={ styles.nodeText }>
-							NodeA
-						</span>
+						<span className={ styles.nodeText }>NodeC</span>
 					</>
 				)
 			}
 			<div className={ styles.nodeWrapper }>
-				<Icons.DataDisplay/>
+				<Icons.Data/>
 			</div>
 		</div>
 	)
 })
 
-export default withMenu(NodeA)
+export default NodeJ

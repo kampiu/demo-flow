@@ -38,14 +38,15 @@
 	justify-content: center;
 	overflow: hidden;
 	transition: background-color linear 0.2s;
+	user-select: none;
 
 	&:hover {
 		background-color: #F0F0F0;
 	}
 
 	&-icon {
-		width: 40px;
-		height: 40px;
+		width: fit-content;
+		height: fit-content;
 		flex: none;
 	}
 
@@ -53,6 +54,8 @@
 		font-size: 12px;
 		margin-top: 6px;
 		text-align: center;
+		width: 100%;
+		display: inline-block;
 	}
 }
 

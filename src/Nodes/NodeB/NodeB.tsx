@@ -1,9 +1,11 @@
-import React, { forwardRef, useImperativeHandle } from "react"
-import styles from "./NodeB.module.less"
-import { Handle, Position } from "reactflow"
+import React, { forwardRef, useCallback, useImperativeHandle } from "react"
+import styles from "../NodeA/NodeA.module.less"
+import { Handle, Position, useStore } from "reactflow"
 import type { NodeProps } from "@reactflow/core/dist/esm/types/nodes"
-import { useFlowDataSelector } from "@/context/FlowData"
 import Icons from "../../components/Icons"
+import { useImmer } from "use-immer"
+import hotkeys from "hotkeys-js"
+import clsx from "clsx"
 
 interface NodeBProps extends NodeProps {
 	isMenu?: boolean
@@ -17,17 +19,34 @@ const NodeB = forwardRef<NodeBInstance, NodeBProps>((props, ref) => {
 	
 	const {isMenu, isConnectable} = props
 	
-	const activeNode = useFlowDataSelector((store) => store.activeNode)
+	const connectionNodeId = useStore((store) => store.connectionNodeId)
+	
+	const [nodeStatus, setNodeStatus] = useImmer({
+		canConnect: false,
+	})
 	
 	useImperativeHandle(ref, (): NodeBInstance => {
 		return {}
 	})
 	
+	const onMouseEnter = useCallback(() => {
+		if (!isMenu) {
+			hotkeys("l", {keyup: true}, (event) => {
+				event.preventDefault()
+				setNodeStatus((preNodeStatus) => {
+					preNodeStatus.canConnect = event.type === "keydown"
+				})
+			})
+		}
+	}, [isMenu])
+	
 	return (
-		<div className={ styles.node }>
-			<div className={styles.nodeWrapper}>
-				<Icons.ReverseOperationOut />
-			</div>
+		<div
+			onMouseEnter={ onMouseEnter }
+			className={ clsx(styles.node, {
+				[styles.nodeConnect]: nodeStatus.canConnect,
+			}) }
+		>
 			{
 				!isMenu && (
 					<>
@@ -35,7 +54,7 @@ const NodeB = forwardRef<NodeBInstance, NodeBProps>((props, ref) => {
 							type="source"
 							className={ styles.nodeHandle }
 							style={ {
-								zIndex: activeNode === null ? 100 : -1,
+								zIndex: connectionNodeId === null && nodeStatus.canConnect ? 100 : -1,
 							} }
 							position={ Position.Top }
 							isConnectable={ isConnectable }
@@ -44,7 +63,7 @@ const NodeB = forwardRef<NodeBInstance, NodeBProps>((props, ref) => {
 							type="target"
 							className={ styles.nodeHandle }
 							style={ {
-								zIndex: (!props.id && activeNode !== props.id) ? 100 : -1
+								zIndex: (!props.id && connectionNodeId !== props.id) ? 100 : -1
 							} }
 							position={ Position.Top }
 							isConnectable={ isConnectable }
@@ -53,6 +72,9 @@ const NodeB = forwardRef<NodeBInstance, NodeBProps>((props, ref) => {
 					</>
 				)
 			}
+			<div className={ styles.nodeWrapper }>
+				<Icons.ReverseOperationOut/>
+			</div>
 		</div>
 	)
 })
